@@ -1,953 +1,233 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Temu ربح">
-<meta name="theme-color" content="#f59e0b">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<title>تتبع أرباح Temu</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;700&display=swap" rel="stylesheet">
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>تتبع أرباح Temu</title>
 <style>
-  :root {
-    --bg: #0f0f0f;
-    --surface: #1a1a1a;
-    --surface2: #242424;
-    --surface3: #2e2e2e;
-    --border: rgba(255,255,255,0.08);
-    --text: #f0f0f0;
-    --muted: #888;
-    --green: #22c55e;
-    --green-dim: rgba(34,197,94,0.12);
-    --blue: #3b82f6;
-    --blue-dim: rgba(59,130,246,0.12);
-    --red: #ef4444;
-    --red-dim: rgba(239,68,68,0.12);
-    --amber: #f59e0b;
-    --amber-dim: rgba(245,158,11,0.12);
-    --purple: #a855f7;
-    --purple-dim: rgba(168,85,247,0.12);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 3rem; }
-
-  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 1rem 1.2rem 0.8rem; position: sticky; top: 0; z-index: 10; }
-  .header h1 { font-size: 18px; font-weight: 700; }
-  .header h1 span { color: var(--amber); }
-  .header p { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
-  .tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 58px; z-index: 9; }
-  .tab { flex: 1; padding: 10px 4px; font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700; color: var(--muted); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: color 0.2s, border-color 0.2s; text-align: center; }
-  .tab.active { color: var(--amber); border-bottom-color: var(--amber); }
-
-  .page { display: none; }
-  .page.active { display: block; }
-
-  /* STATS */
-  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 1rem; }
-  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
-  .stat.wide { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; }
-  .stat-label { font-size: 11px; color: var(--muted); margin-bottom: 5px; }
-  .stat-val { font-size: 19px; font-weight: 700; line-height: 1; }
-  .stat-val.g { color: var(--green); }
-  .stat-val.b { color: var(--blue); }
-  .stat-val.r { color: var(--red); }
-  .stat-val.w { color: var(--text); }
-  .stat-val.p { color: var(--purple); }
-
-  /* FORM */
-  .form-section { margin: 0 1rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; }
-  .form-header { padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 700; color: var(--muted); font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; }
-  .form-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .field-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
-
-  input[type="text"], input[type="number"], input[type="date"], textarea, select {
-    width: 100%; background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 10px; padding: 11px 13px; font-size: 14px;
-    font-family: 'Cairo', sans-serif; color: var(--text); outline: none; transition: border-color 0.2s;
-  }
-  select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: left 12px center; padding-left: 30px; }
-  textarea { resize: none; height: 72px; line-height: 1.5; }
-  input:focus, textarea:focus, select:focus { border-color: rgba(59,130,246,0.5); }
-  input::placeholder, textarea::placeholder { color: var(--muted); font-size: 13px; }
-  input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) opacity(0.4); }
-
-  /* IMAGE UPLOAD */
-  .img-upload-area {
-    border: 1.5px dashed var(--border);
-    border-radius: 12px;
-    padding: 14px;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
-    background: var(--surface2);
-    position: relative;
-  }
-  .img-upload-area:active { background: var(--surface3); }
-  .img-upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-  .img-upload-icon { font-size: 24px; display: block; margin-bottom: 4px; }
-  .img-upload-text { font-size: 12px; color: var(--muted); }
-  .img-preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
-  .img-preview-wrap { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; }
-  .img-preview-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .img-remove-btn { position: absolute; top: 3px; left: 3px; background: rgba(0,0,0,0.7); color: #fff; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; }
-
-  .btn-add { width: 100%; padding: 13px; background: var(--blue); color: #fff; font-family: 'Cairo', sans-serif; font-size: 15px; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
-  .btn-add:active { opacity: 0.85; transform: scale(0.98); }
-  .btn-add.secondary { background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
-
-  /* ORDER CARDS */
-  .orders-section { padding: 0 1rem; }
-  .section-title { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-  .section-actions { display: flex; gap: 8px; }
-  .btn-icon { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); font-size: 14px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-
-  .order-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px; margin-bottom: 10px; animation: slideIn 0.25s ease; }
-  @keyframes slideIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
-
-  .order-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-  .order-name { font-size: 15px; font-weight: 700; }
-  .order-date { font-size: 11px; color: var(--muted); margin-top: 3px; }
-  .order-address { font-size: 11px; color: var(--muted); margin-top: 3px; display: flex; align-items: flex-start; gap: 3px; }
-  .order-profit-badge { background: var(--green-dim); color: var(--green); font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
-  .order-status { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 12px; margin-top: 4px; }
-  .status-pending { background: var(--amber-dim); color: var(--amber); }
-  .status-delivered { background: var(--green-dim); color: var(--green); }
-  .status-cancelled { background: var(--red-dim); color: var(--red); }
-
-  .order-imgs { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
-  .order-img { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); cursor: pointer; }
-
-  .order-details { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .detail-box { background: var(--surface2); border-radius: 10px; padding: 9px 11px; }
-  .detail-label { font-size: 10px; color: var(--muted); margin-bottom: 3px; }
-  .detail-val { font-size: 13px; font-weight: 700; }
-  .detail-val.b { color: var(--blue); }
-  .detail-val.r { color: var(--red); }
-
-  .order-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
-  .btn-edit { background: var(--blue-dim); color: var(--blue); border: none; font-family: 'Cairo', sans-serif; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 8px; cursor: pointer; }
-  .btn-del { background: var(--red-dim); color: var(--red); border: none; font-family: 'Cairo', sans-serif; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 8px; cursor: pointer; }
-  .btn-del:active, .btn-edit:active { opacity: 0.7; }
-
-  /* SEARCH & FILTER */
-  .search-bar { margin: 0 1rem 1rem; position: relative; }
-  .search-bar input { width: 100%; padding: 12px 40px 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; font-family: 'Cairo', sans-serif; font-size: 14px; color: var(--text); outline: none; }
-  .search-bar input:focus { border-color: var(--amber); }
-  .search-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); }
-  .filter-tags { display: flex; gap: 8px; padding: 0 1rem 1rem; overflow-x: auto; scrollbar-width: none; }
-  .filter-tags::-webkit-scrollbar { display: none; }
-  .filter-tag { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px; font-size: 12px; color: var(--muted); cursor: pointer; white-space: nowrap; transition: all 0.2s; }
-  .filter-tag.active { background: var(--amber-dim); border-color: var(--amber); color: var(--amber); }
-
-  /* MONTHLY */
-  .month-page { padding: 1rem; }
-  .month-selector { display: flex; align-items: center; justify-content: space-between; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px 16px; margin-bottom: 1rem; }
-  .month-nav { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 20px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; }
-  .month-nav:active { opacity: 0.6; }
-  .month-label { font-size: 17px; font-weight: 700; color: var(--amber); }
-  .month-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
-  .mcard { border-radius: 14px; padding: 16px 14px; border: 1px solid var(--border); }
-  .mcard.gr { background: var(--green-dim); border-color: rgba(34,197,94,0.2); }
-  .mcard.rd { background: var(--red-dim); border-color: rgba(239,68,68,0.2); }
-  .mcard.bl { background: var(--blue-dim); border-color: rgba(59,130,246,0.2); }
-  .mcard.am { background: var(--amber-dim); border-color: rgba(245,158,11,0.2); }
-  .mcard.pu { background: var(--purple-dim); border-color: rgba(168,85,247,0.2); }
-  .mcard.full { grid-column:1/-1; background: var(--surface); display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; }
-  .mcard-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
-  .mcard-val { font-size: 21px; font-weight: 700; line-height: 1.1; }
-  .mcard-val.g { color: var(--green); }
-  .mcard-val.r { color: var(--red); }
-  .mcard-val.b { color: var(--blue); }
-  .mcard-val.a { color: var(--amber); }
-  .mcard-val.p { color: var(--purple); }
-  .bar-wrap { margin-bottom: 1.2rem; }
-  .bar-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 6px; }
-  .bar-track { background: var(--surface2); border-radius: 99px; height: 8px; overflow: hidden; }
-  .bar-fill { height: 100%; border-radius: 99px; background: var(--green); transition: width 0.6s ease; }
-  .month-orders-title { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 10px; }
-  .morder-row { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-  .morder-name { font-size: 14px; font-weight: 700; }
-  .morder-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .morder-profit { font-size: 13px; font-weight: 700; color: var(--green); text-align: left; }
-  .morder-cost { font-size: 11px; color: var(--red); margin-top: 2px; text-align: left; }
-
-  /* ANALYTICS */
-  .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 1rem 1rem; }
-  .achart { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
-  .achart-title { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
-  .chart-bar { display: flex; align-items: center; margin-bottom: 8px; }
-  .chart-label { font-size: 11px; color: var(--muted); width: 40px; }
-  .chart-track { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; margin: 0 8px; overflow: hidden; }
-  .chart-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
-  .chart-value { font-size: 11px; font-weight: 700; min-width: 40px; text-align: left; }
-
-  /* MODAL */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; width: 100%; max-width: 400px; max-height: 90vh; overflow: hidden; animation: modalIn 0.2s ease; }
-  @keyframes modalIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
-  .modal-header { padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-  .modal-title { font-size: 16px; font-weight: 700; }
-  .modal-close { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; }
-  .modal-body { padding: 16px; overflow-y: auto; max-height: 60vh; }
-  .modal-footer { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
-  .modal-footer button { flex: 1; }
-
-  /* LIGHTBOX */
-  .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 999; align-items: center; justify-content: center; }
-  .lightbox.open { display: flex; }
-  .lightbox img { max-width: 92vw; max-height: 88vh; border-radius: 12px; object-fit: contain; }
-  .lightbox-close { position: absolute; top: 16px; left: 16px; background: rgba(255,255,255,0.15); color: #fff; border: none; font-size: 22px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
-  /* INSTALL BANNER */
-  #install-banner { display: none; margin: 0.8rem 1rem 0; background: var(--amber-dim); border: 1px solid rgba(245,158,11,0.3); border-radius: 14px; padding: 12px 14px; align-items: center; gap: 10px; }
-  #install-banner.show { display: flex; }
-  #install-banner p { flex: 1; font-size: 13px; color: var(--amber); font-weight: 700; }
-  #install-banner small { display: block; font-size: 11px; color: var(--muted); font-weight: 400; margin-top: 2px; }
-  .btn-install { background: var(--amber); color: #0f0f0f; border: none; font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 10px; cursor: pointer; white-space: nowrap; }
-
-  /* BACKUP/EXPORT */
-  .action-buttons { display: flex; gap: 10px; padding: 0 1rem 1rem; }
-  .action-btn { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.2s; }
-  .action-btn:active { background: var(--surface2); }
-  .action-btn-icon { font-size: 20px; display: block; margin-bottom: 4px; }
-  .action-btn-text { font-size: 12px; color: var(--muted); }
-
-  .empty { text-align: center; color: var(--muted); padding: 3rem 1rem; font-size: 14px; line-height: 2.2; }
-  .empty-icon { font-size: 40px; display: block; margin-bottom: 0.5rem; opacity: 0.5; }
-
-  .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(80px); color: #fff; font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700; padding: 10px 20px; border-radius: 30px; transition: transform 0.3s ease; z-index: 1001; white-space: nowrap; }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-
-  /* CONFIRM DIALOG */
-  .confirm-dialog { text-align: center; padding: 20px; }
-  .confirm-icon { font-size: 48px; margin-bottom: 12px; }
-  .confirm-text { font-size: 15px; margin-bottom: 20px; line-height: 1.6; }
-  .confirm-buttons { display: flex; gap: 10px; }
-  .confirm-buttons button { flex: 1; padding: 12px; border-radius: 10px; border: none; font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; }
-  .btn-cancel { background: var(--surface2); color: var(--text); }
-  .btn-confirm { background: var(--red); color: #fff; }
-
-  /* Quick Stats Row */
-  .quick-stats { display: flex; gap: 10px; padding: 0 1rem 1rem; overflow-x: auto; scrollbar-width: none; }
-  .quick-stats::-webkit-scrollbar { display: none; }
-  .qstat { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; min-width: 120px; text-align: center; }
-  .qstat-value { font-size: 18px; font-weight: 700; color: var(--amber); }
-  .qstat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+:root{--bg:#0a0a0a;--surface:#141414;--surface2:#1e1e1e;--border:rgba(255,255,255,0.06);--text:#fff;--muted:#666;--green:#00d084;--blue:#00b8ff;--red:#ff4757;--amber:#ffa502;--g1:linear-gradient(135deg,#667eea,#764ba2);--g2:linear-gradient(135deg,#4facfe,#00f2fe)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.bg{position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(0,184,255,0.15),transparent),radial-gradient(ellipse at 80% 80%,rgba(0,208,132,0.1),transparent);pointer-events:none;z-index:0}
+.header{background:rgba(255,255,255,0.03);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:1.2rem;position:sticky;top:0;z-index:100}
+.header h1{font-size:22px;font-weight:800;background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:6px;gap:4px;position:sticky;top:73px;z-index:99}
+.tab{flex:1;padding:12px;font-size:12px;font-weight:700;color:var(--muted);background:transparent;border:none;border-radius:12px;cursor:pointer;transition:all 0.3s}
+.tab.active{background:var(--g2);color:#fff;transform:translateY(-2px)}
+.page{display:none;position:relative;z-index:1}.page.active{display:block;animation:pe 0.4s ease}@keyframes pe{from{opacity:0;transform:translateY(20px)}}
+.hero{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:1rem}
+.hero-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;transition:all 0.3s}
+.hero-card:hover{transform:translateY(-5px);box-shadow:0 20px 40px rgba(0,0,0,0.4)}
+.hero-card.wide{grid-column:1/-1;background:var(--g1);display:flex;justify-content:space-between}
+.hero-val{font-size:26px;font-weight:800}.hero-val.inc{color:var(--blue)}.hero-val.pr{color:var(--green)}.hero-val.co{color:var(--red)}
+.quick{display:flex;gap:12px;padding:0 1rem 1rem;overflow-x:auto}
+.qa{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:16px;min-width:100px;text-align:center;cursor:pointer}
+.search{padding:0 1rem 1rem}.sb{background:var(--surface2);border:1px solid var(--border);border-radius:16px;position:relative}
+.sb input{width:100%;padding:16px 50px 16px 20px;background:transparent;border:none;color:var(--text);font-size:15px}
+.filters{display:flex;gap:8px;padding:12px;overflow-x:auto}
+.fc{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:8px 16px;font-size:12px;color:var(--muted);cursor:pointer;white-space:nowrap}
+.fc.active{background:rgba(0,184,255,0.15);border-color:var(--blue);color:var(--blue)}
+.order{background:var(--surface);border:1px solid var(--border);border-radius:20px;margin-bottom:16px;overflow:hidden;transition:all 0.3s}
+.order:hover{transform:translateX(-5px)}
+.oh{padding:16px;display:flex;justify-content:space-between;background:linear-gradient(135deg,var(--surface),var(--surface2))}
+.oc{font-size:16px;font-weight:700}.ob{background:var(--green);color:#000;padding:6px 14px;border-radius:20px;font-weight:700}
+.os{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border)}
+.obtn{flex:1;padding:10px;border-radius:10px;border:none;font-family:'Cairo';font-size:12px;font-weight:700;cursor:pointer}
+.be{background:rgba(0,184,255,0.15);color:var(--blue)}.bd{background:rgba(255,71,87,0.15);color:var(--red)}
+.form{padding:1rem}.fcard{background:var(--surface);border:1px solid var(--border);border-radius:24px;overflow:hidden}
+.fh{background:var(--g1);padding:24px;color:#fff}.fb{padding:24px}.fg{margin-bottom:20px}
+.fin{width:100%;background:var(--surface2);border:2px solid var(--border);border-radius:14px;padding:14px;color:var(--text);font-size:15px}
+.fin:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(0,184,255,0.1)}
+.ss{display:flex;gap:8px}.so{flex:1;padding:12px;border:2px solid var(--border);border-radius:12px;text-align:center;cursor:pointer;background:var(--surface2)}
+.so.active{border-color:var(--blue);background:rgba(0,184,255,0.15)}
+.uz{border:2px dashed var(--border);border-radius:16px;padding:32px;text-align:center;cursor:pointer}
+.pg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+.sbmt{width:100%;padding:18px;background:var(--g1);color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer}
+.mn{display:flex;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin:1rem}
+.mbtn{width:40px;height:40px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);color:var(--text);cursor:pointer}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 1rem 1rem}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px}
+.sc.pr{background:rgba(0,208,132,0.15);border-color:var(--green)}
+.sc.co{background:rgba(255,71,87,0.15);border-color:var(--red)}
+.ah{background:var(--g1);margin:1rem;border-radius:24px;padding:24px;color:#fff}
+.ag{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ai{background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);border-radius:12px;padding:16px}
+.chart{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;margin:0 1rem 1rem}
+.bar{display:flex;align-items:center;margin-bottom:12px}.bl{width:50px;font-size:12px;color:var(--muted)}
+.bt{flex:1;height:10px;background:var(--surface2);border-radius:5px;margin:0 12px;overflow:hidden}
+.bf{height:100%;border-radius:5px;background:var(--green);transition:width 1s}
+.tips{background:var(--surface);border:1px solid var(--border);border-radius:20px;margin:0 1rem 1rem;overflow:hidden}
+.th{background:var(--g2);padding:16px 20px;font-weight:700}.tl{padding:16px}
+.tip{display:flex;gap:12px;padding:12px;background:var(--surface2);border-radius:12px;margin-bottom:8px;border-right:3px solid var(--purple)}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:1000;align-items:center;justify-content:center;padding:20px}
+.modal.show{display:flex}.mc{background:var(--surface);border:1px solid var(--border);border-radius:24px;width:100%;max-width:400px;overflow:hidden}
+.lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:999;align-items:center;justify-content:center}
+.lb.show{display:flex}.lb img{max-width:90vw;max-height:85vh;border-radius:16px}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--surface);border:1px solid var(--border);padding:16px 28px;border-radius:50px;font-weight:600;z-index:1001;opacity:0;transition:all 0.4s}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.fab{position:fixed;bottom:24px;left:24px;width:60px;height:60px;background:var(--g1);border:none;border-radius:50%;color:#fff;font-size:28px;cursor:pointer;box-shadow:0 10px 30px rgba(102,126,234,0.5);z-index:98}
+.empty{text-align:center;padding:60px 20px}.ei{width:150px;height:150px;margin:0 auto 24px;background:var(--surface2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:60px;animation:fl 3s ease-in-out infinite}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 </style>
+
 <base target="_blank">
 </head>
 <body>
-
-<div class="header">
-  <h1>تتبع أرباح <span>Temu</span> 📊</h1>
-  <p>بياناتك محفوظة تلقائياً على جهازك</p>
-</div>
-
-<div id="install-banner">
-  <p>📲 ثبّت التطبيق<small>يعمل بدون إنترنت</small></p>
-  <button class="btn-install" onclick="installApp()">تثبيت</button>
-</div>
+<div class="bg"></div>
+<div class="header"><div class="header-content"><div><h1>💰 Temu ربح</h1><p style="font-size:11px;color:var(--muted)">تتبع أرباحك بذكاء</p></div><div style="font-size:28px">📊</div></div></div>
 
 <div class="tabs">
-  <button class="tab active" onclick="switchTab('home')">🏠 الرئيسية</button>
-  <button class="tab" onclick="switchTab('monthly')">📅 الشهري</button>
-  <button class="tab" onclick="switchTab('analytics')">📈 تحليلات</button>
-  <button class="tab" onclick="switchTab('add')">➕ إضافة</button>
+  <button class="tab active" onclick="st('home',this)">🏠 الرئيسية</button>
+  <button class="tab" onclick="st('monthly',this)">📅 الشهري</button>
+  <button class="tab" onclick="st('analytics',this)">📈 تحليلات</button>
+  <button class="tab" onclick="st('add',this)">➕ جديد</button>
 </div>
 
-<!-- ══════════ HOME ══════════ -->
 <div class="page active" id="page-home">
-  <div class="stats">
-    <div class="stat"><div class="stat-label">إجمالي الدخل</div><div class="stat-val b" id="s-income">0.00 درهم</div></div>
-    <div class="stat"><div class="stat-label">صافي الربح الكلي</div><div class="stat-val g" id="s-profit">0.00 درهم</div></div>
-    <div class="stat wide">
-      <div><div class="stat-label">إجمالي التكلفة</div><div class="stat-val r" id="s-cost">0.00 درهم</div></div>
-      <div style="text-align:left;"><div class="stat-label">عدد الطلبات</div><div class="stat-val w" id="s-count">0</div></div>
+  <div class="hero">
+    <div class="hero-card"><div style="font-size:32px;margin-bottom:12px">💵</div><div style="font-size:12px;color:var(--muted)">إجمالي الدخل</div><div class="hero-val inc" id="h-inc">0 درهم</div></div>
+    <div class="hero-card"><div style="font-size:32px;margin-bottom:12px">📈</div><div style="font-size:12px;color:var(--muted)">صافي الربح</div><div class="hero-val pr" id="h-pr">0 درهم</div></div>
+    <div class="hero-card wide"><div><div style="font-size:12px;opacity:0.8">التكلفة</div><div style="font-size:24px;font-weight:800" id="h-co">0 درهم</div></div><div style="text-align:center"><div style="font-size:12px;opacity:0.8">الطلبات</div><div style="font-size:32px;font-weight:800" id="h-cnt">0</div></div></div>
+  </div>
+
+  <div class="quick">
+    <div class="qa" onclick="exp()">📥<br><small>تصدير</small></div>
+    <div class="qa" onclick="document.getElementById('imp').click()">📤<br><small>استيراد</small></div>
+    <div class="qa" onclick="calc()">🧮<br><small>حاسبة</small></div>
+    <div class="qa" onclick="share()">📤<br><small>مشاركة</small></div>
+  </div>
+  <input type="file" id="imp" accept=".json" style="display:none" onchange="imp(event)">
+
+  <div class="search">
+    <div class="sb"><input type="text" id="srch" placeholder="ابحث..." oninput="filt()"></div>
+    <div class="filters">
+      <div class="fc active" onclick="setf('all',this)">الكل</div>
+      <div class="fc" onclick="setf('today',this)">اليوم</div>
+      <div class="fc" onclick="setf('week',this)">الأسبوع</div>
+      <div class="fc" onclick="setf('pending',this)">قيد الانتظار</div>
     </div>
   </div>
 
-  <div class="quick-stats" id="quick-stats">
-    <div class="qstat"><div class="qstat-value" id="q-avg">0</div><div class="qstat-label">متوسط الربح</div></div>
-    <div class="qstat"><div class="qstat-value" id="q-margin">0%</div><div class="qstat-label">هامش الربح</div></div>
-    <div class="qstat"><div class="qstat-value" id="q-today">0</div><div class="qstat-label">طلبات اليوم</div></div>
-    <div class="qstat"><div class="qstat-value" id="q-week">0</div><div class="qstat-label">طلبات الأسبوع</div></div>
-  </div>
-
-  <div class="action-buttons">
-    <div class="action-btn" onclick="exportData()">
-      <span class="action-btn-icon">📥</span>
-      <span class="action-btn-text">تصدير البيانات</span>
-    </div>
-    <div class="action-btn" onclick="document.getElementById('import-file').click()">
-      <span class="action-btn-icon">📤</span>
-      <span class="action-btn-text">استيراد البيانات</span>
-    </div>
-    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
-  </div>
-
-  <div class="search-bar">
-    <span class="search-icon">🔍</span>
-    <input type="text" id="search-input" placeholder="البحث في الطلبات..." oninput="filterOrders()">
-  </div>
-
-  <div class="filter-tags">
-    <div class="filter-tag active" onclick="setFilter('all')">الكل</div>
-    <div class="filter-tag" onclick="setFilter('today')">اليوم</div>
-    <div class="filter-tag" onclick="setFilter('week')">هذا الأسبوع</div>
-    <div class="filter-tag" onclick="setFilter('month')">هذا الشهر</div>
-    <div class="filter-tag" onclick="setFilter('pending')">قيد الانتظار</div>
-    <div class="filter-tag" onclick="setFilter('delivered')">تم التوصيل</div>
-  </div>
-
-  <div class="orders-section">
-    <div class="section-title">
-      <span>سجل الطلبات</span>
-      <div class="section-actions">
-        <button class="btn-icon" onclick="toggleSort()" title="ترتيب">⇅</button>
-      </div>
-    </div>
-    <div id="orders-list"></div>
-  </div>
+  <div style="padding:0 1rem;margin-bottom:12px;font-size:14px;font-weight:700;color:var(--text2)">📋 سجل الطلبات</div>
+  <div id="olist"></div>
 </div>
 
-<!-- ══════════ MONTHLY ══════════ -->
 <div class="page" id="page-monthly">
-  <div class="month-page">
-    <div class="month-selector">
-      <div class="month-nav" onclick="changeMonth(-1)">›</div>
-      <div class="month-label" id="month-label">—</div>
-      <div class="month-nav" onclick="changeMonth(1)">‹</div>
-    </div>
-    <div class="month-grid">
-      <div class="mcard gr"><div class="mcard-label">💰 صافي الربح</div><div class="mcard-val g" id="m-profit">0.00 درهم</div></div>
-      <div class="mcard rd"><div class="mcard-label">🛒 ما صرفته</div><div class="mcard-val r" id="m-cost">0.00 درهم</div></div>
-      <div class="mcard bl"><div class="mcard-label">📥 إجمالي الدخل</div><div class="mcard-val b" id="m-income">0.00 درهم</div></div>
-      <div class="mcard am"><div class="mcard-label">📦 عدد الطلبات</div><div class="mcard-val a" id="m-count">0</div></div>
-      <div class="mcard pu"><div class="mcard-label">🚚 أرباح التوصيل</div><div class="mcard-val p" id="m-delivery">0.00 درهم</div></div>
-      <div class="mcard full">
-        <div><div class="mcard-label">متوسط الربح / طلب</div><div class="mcard-val g" id="m-avg">0.00 درهم</div></div>
-        <div style="text-align:left;"><div class="mcard-label">نسبة الربح</div><div class="mcard-val a" id="m-pct">0%</div></div>
-      </div>
-    </div>
-    <div class="bar-wrap">
-      <div class="bar-labels"><span>نسبة الربح من الدخل</span><span id="m-pct2">0%</span></div>
-      <div class="bar-track"><div class="bar-fill" id="m-bar" style="width:0%"></div></div>
-    </div>
-    <div class="month-orders-title">تفاصيل طلبات الشهر</div>
-    <div id="month-orders-list"></div>
+  <div class="mn">
+    <button class="mbtn" onclick="cm(-1)">›</button>
+    <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:var(--amber)" id="mn">---</div><div style="font-size:12px;color:var(--muted)" id="my">----</div></div>
+    <button class="mbtn" onclick="cm(1)">‹</button>
   </div>
+  <div class="sg">
+    <div class="sc pr"><div style="font-size:24px;margin-bottom:12px">💰</div><div style="font-size:12px;color:var(--muted)">الربح</div><div style="font-size:20px;font-weight:800;color:var(--green)" id="m-pr">0</div></div>
+    <div class="sc co"><div style="font-size:24px;margin-bottom:12px">🛒</div><div style="font-size:12px;color:var(--muted)">التكلفة</div><div style="font-size:20px;font-weight:800;color:var(--red)" id="m-co">0</div></div>
+    <div class="sc"><div style="font-size:24px;margin-bottom:12px">📥</div><div style="font-size:12px;color:var(--muted)">الدخل</div><div style="font-size:20px;font-weight:800;color:var(--blue)" id="m-inc">0</div></div>
+    <div class="sc"><div style="font-size:24px;margin-bottom:12px">📦</div><div style="font-size:12px;color:var(--muted)">الطلبات</div><div style="font-size:20px;font-weight:800" id="m-cnt">0</div></div>
+  </div>
+  <div id="mlist"></div>
 </div>
 
-<!-- ══════════ ANALYTICS ══════════ -->
 <div class="page" id="page-analytics">
-  <div class="stats" style="padding-bottom: 0;">
-    <div class="stat"><div class="stat-label">أفضل شهر</div><div class="stat-val p" id="a-best-month">—</div></div>
-    <div class="stat"><div class="stat-label">أعلى ربح يومي</div><div class="stat-val g" id="a-best-day">0 درهم</div></div>
-    <div class="stat wide">
-      <div><div class="stat-label">الزبون الأكثر طلباً</div><div class="stat-val w" id="a-top-customer">—</div></div>
-      <div style="text-align:left;"><div class="stat-label">عدد طلباته</div><div class="stat-val a" id="a-top-count">0</div></div>
+  <div class="ah">
+    <div style="font-size:18px;font-weight:800;margin-bottom:16px">📊 نظرة شاملة</div>
+    <div class="ag">
+      <div class="ai"><div style="font-size:11px;opacity:0.8">أفضل شهر</div><div style="font-size:20px;font-weight:800" id="a-bm">---</div></div>
+      <div class="ai"><div style="font-size:11px;opacity:0.8">أعلى يوم</div><div style="font-size:20px;font-weight:800" id="a-bd">0</div></div>
+      <div class="ai"><div style="font-size:11px;opacity:0.8">أفضل زبون</div><div style="font-size:20px;font-weight:800" id="a-tc">---</div></div>
+      <div class="ai"><div style="font-size:11px;opacity:0.8">متوسط الربح</div><div style="font-size:20px;font-weight:800" id="a-ap">0</div></div>
     </div>
   </div>
-
-  <div class="analytics-grid">
-    <div class="achart">
-      <div class="achart-title">📊 توزيع الأرباح حسب الشهر</div>
-      <div id="chart-months"></div>
-    </div>
-    <div class="achart">
-      <div class="achart-title">👥 أفضل 5 زبائن</div>
-      <div id="chart-customers"></div>
-    </div>
-  </div>
-
-  <div class="form-section" style="margin: 0 1rem 1rem;">
-    <div class="form-header">💡 نصائح ذكية</div>
-    <div class="form-body" id="tips-container">
-      <div style="color: var(--muted); font-size: 13px; text-align: center;">أضف بعض الطلبات لرؤية التحليلات</div>
-    </div>
-  </div>
+  <div class="chart"><div style="font-size:14px;font-weight:700;margin-bottom:20px">📊 الأرباح الشهرية</div><div id="ch-m"></div></div>
+  <div class="chart"><div style="font-size:14px;font-weight:700;margin-bottom:20px">👥 أفضل الزبائن</div><div id="ch-c"></div></div>
+  <div class="tips"><div class="th">💡 نصائح ذكية</div><div class="tl" id="tips"></div></div>
 </div>
 
-<!-- ══════════ ADD ══════════ -->
 <div class="page" id="page-add">
-  <div style="padding:1rem;">
-    <div class="form-section" style="margin:0 0 1rem;">
-      <div class="form-header" id="form-title">إضافة طلب جديد</div>
-      <div class="form-body">
-        <input type="hidden" id="f-id" value="">
-
-        <div>
-          <div class="field-label">📅 التاريخ</div>
-          <input type="date" id="f-date" />
+  <div class="form">
+    <div class="fcard">
+      <div class="fh"><div style="font-size:20px;font-weight:800" id="ft">✨ طلب جديد</div><div style="font-size:13px;opacity:0.9">أدخل تفاصيل الطلب</div></div>
+      <div class="fb">
+        <input type="hidden" id="fid">
+        <div class="fg"><label style="font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:8px">📅 التاريخ *</label><input type="date" class="fin" id="fd"></div>
+        <div class="fg"><label style="font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:8px">👤 اسم الزبون *</label><input type="text" class="fin" id="fc" placeholder="مثال: أحمد محمد"></div>
+        <div class="fg"><label style="font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:8px">📍 العنوان</label><textarea class="fin" id="fa" style="height:80px;resize:none" placeholder="المدينة، الحي..."></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="fg"><label style="font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:8px">💵 سعر البيع *</label><input type="number" class="fin" id="fam" placeholder="0"></div>
+          <div class="fg"><label style="font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:8px">💰 الربح *</label><input type="number" class="fin" id="fp" placeholder="0"></div>
         </div>
-
-        <div>
-          <div class="field-label">👤 اسم الزبون</div>
-          <input type="text" id="f-customer" placeholder="مثال: محمد العمراني" />
-        </div>
-
-        <div>
-          <div class="field-label">📍 العنوان</div>
-          <textarea id="f-address" placeholder="المدينة، الحي، رقم المنزل..."></textarea>
-        </div>
-
-        <div class="row2">
-          <div>
-            <div class="field-label">💵 السعر النهائي</div>
-            <input type="number" id="f-amount" placeholder="درهم" min="0" step="0.01" />
+        <div class="fg"><label style="font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:8px">🚚 توصيل</label><input type="number" class="fin" id="fdl" placeholder="0"></div>
+        <div class="fg">
+          <label style="font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:8px">📋 الحالة</label>
+          <div class="ss">
+            <div class="so active pending" onclick="ss('pending',this)"><span style="font-size:20px">⏳</span><span style="font-size:11px">قيد الانتظار</span></div>
+            <div class="so delivered" onclick="ss('delivered',this)"><span style="font-size:20px">✅</span><span style="font-size:11px">تم التوصيل</span></div>
+            <div class="so cancelled" onclick="ss('cancelled',this)"><span style="font-size:20px">❌</span><span style="font-size:11px">ملغي</span></div>
           </div>
-          <div>
-            <div class="field-label">💰 صافي الربح</div>
-            <input type="number" id="f-profit" placeholder="درهم" min="0" step="0.01" />
-          </div>
+          <input type="hidden" id="fst" value="pending">
         </div>
-
-        <div>
-          <div class="field-label">🚚 سعر التوصيل (اختياري)</div>
-          <input type="number" id="f-delivery" placeholder="درهم" min="0" step="0.01" />
+        <div class="fg"><label style="font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:8px">📝 ملاحظات</label><textarea class="fin" id="fn" style="height:80px;resize:none" placeholder="أي ملاحظات..."></textarea></div>
+        <div class="fg">
+          <label style="font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:8px">📷 صور</label>
+          <div class="uz" id="uz"><input type="file" id="fim" accept="image/*" multiple onchange="pim(event)"><span style="font-size:40px">📸</span><div style="font-weight:600">اضغط لإضافة صور</div></div>
+          <div class="pg" id="pg"></div>
         </div>
-
-        <div>
-          <div class="field-label">📋 حالة الطلب</div>
-          <select id="f-status">
-            <option value="pending">⏳ قيد الانتظار</option>
-            <option value="delivered">✅ تم التوصيل</option>
-            <option value="cancelled">❌ ملغي</option>
-          </select>
-        </div>
-
-        <div>
-          <div class="field-label">📝 ملاحظات (اختياري)</div>
-          <textarea id="f-notes" placeholder="أي ملاحظات إضافية..."></textarea>
-        </div>
-
-        <div>
-          <div class="field-label">🖼 صور المنتجات (اختياري)</div>
-          <div class="img-upload-area" id="upload-area">
-            <input type="file" id="f-images" accept="image/*" multiple onchange="previewImages(event)" />
-            <span class="img-upload-icon">📷</span>
-            <span class="img-upload-text">اضغط لإضافة صور المنتجات</span>
-          </div>
-          <div class="img-preview-grid" id="preview-grid"></div>
-        </div>
-
-        <button class="btn-add" id="btn-submit" onclick="addOrder()">+ إضافة الطلب</button>
-        <button class="btn-add secondary" id="btn-cancel" onclick="cancelEdit()" style="display:none;">إلغاء</button>
+        <button class="sbmt" onclick="sv()">💾 حفظ الطلب</button>
+        <button class="sbmt secondary" id="fcnl" onclick="ccl()" style="display:none;margin-top:12px">إلغاء</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- CONFIRM DIALOG -->
-<div class="modal-overlay" id="confirm-modal">
-  <div class="modal" style="max-width: 320px;">
-    <div class="confirm-dialog">
-      <div class="confirm-icon">🗑️</div>
-      <div class="confirm-text" id="confirm-text">هل أنت متأكد من حذف هذا الطلب؟</div>
-      <div class="confirm-buttons">
-        <button class="btn-cancel" onclick="closeConfirmModal()">إلغاء</button>
-        <button class="btn-confirm" id="confirm-btn">حذف</button>
-      </div>
-    </div>
-  </div>
-</div>
+<div class="modal" id="calc-m"><div class="mc"><div style="padding:24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><div style="font-size:18px;font-weight:800">🧮 حاسبة الربح</div><button onclick="document.getElementById('calc-m').classList.remove('show')" style="width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--muted);cursor:pointer">✕</button></div><div style="padding:24px"><div class="fg"><label style="font-size:13px;font-weight:600;display:block;margin-bottom:8px">سعر الشراء</label><input type="number" class="fin" id="cb" placeholder="0" oninput="ccalc()"></div><div class="fg"><label style="font-size:13px;font-weight:600;display:block;margin-bottom:8px">سعر البيع</label><input type="number" class="fin" id="cs" placeholder="0" oninput="ccalc()"></div><div class="fg"><label style="font-size:13px;font-weight:600;display:block;margin-bottom:8px">التوصيل</label><input type="number" class="fin" id="cd" placeholder="0" oninput="ccalc()"></div><div style="background:var(--surface2);border-radius:12px;padding:20px;text-align:center;margin-top:20px"><div style="font-size:12px;color:var(--muted);margin-bottom:8px">صافي الربح</div><div style="font-size:32px;font-weight:800;color:var(--green)" id="cr">0 درهم</div></div></div></div></div>
 
-<!-- LIGHTBOX -->
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
-  <img id="lightbox-img" src="" alt="">
-</div>
+<div class="modal" id="conf-m"><div class="mc" style="max-width:340px"><div style="padding:32px 24px;text-align:center"><div style="font-size:56px;margin-bottom:16px">🗑️</div><div style="font-size:18px;font-weight:800;margin-bottom:8px">حذف الطلب؟</div><div style="font-size:14px;color:var(--muted);margin-bottom:24px">لا يمكن التراجع</div><div style="display:flex;gap:12px"><button class="sbmt secondary" onclick="document.getElementById('conf-m').classList.remove('show')" style="flex:1">إلغاء</button><button class="sbmt" onclick="cdel()" style="flex:1;background:var(--red)">حذف</button></div></div></div></div>
 
-<div class="toast" id="toast"></div>
+<div class="lb" id="lb" onclick="document.getElementById('lb').classList.remove('show')"><button style="position:absolute;top:20px;left:20px;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:24px;cursor:pointer">✕</button><img id="lbi" src="" style="max-width:90vw;max-height:85vh;border-radius:16px"></div>
+
+<div class="toast" id="toast">✓ تم بنجاح</div>
+<button class="fab" id="fab" onclick="st('add',document.querySelectorAll('.tab')[3])">+</button>
 
 <script>
-  let orders = JSON.parse(localStorage.getItem('temuOrders') || '[]');
-  let pendingImages = [];
-  let editingId = null;
-  let currentFilter = 'all';
-  let sortDesc = true;
-  let deleteCallback = null;
+let orders=JSON.parse(localStorage.getItem('temuOrders')||'[]'),pimgs=[],eid=null,filter='all',sortD=true,delid=null,cst='pending',vdate=new Date();
+const MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 
-  const MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-  const now = new Date();
-  let viewYear = now.getFullYear(), viewMonth = now.getMonth();
-  let deferredPrompt = null;
+function st(tab,btn){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));if(btn)btn.classList.add('active');document.getElementById('page-'+tab).classList.add('active');if(tab==='monthly')rm();if(tab==='analytics')ra();if(tab==='add'){document.getElementById('fab').style.display='none';if(!eid)document.getElementById('fd').value=new Date().toISOString().split('T')[0]}else{document.getElementById('fab').style.display='flex'}}
 
-  // ── PWA ──
-  window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault(); deferredPrompt = e;
-    document.getElementById('install-banner').classList.add('show');
-  });
-  window.addEventListener('appinstalled', () => {
-    document.getElementById('install-banner').classList.remove('show');
-    showToast('تم تثبيت التطبيق 🎉');
-  });
-  function installApp() {
-    if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => deferredPrompt = null); }
-  }
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
+function ss(st,el){cst=st;document.getElementById('fst').value=st;document.querySelectorAll('.so').forEach(o=>o.classList.remove('active','pending','delivered','cancelled'));el.classList.add('active',st)}
 
-  // ── STORAGE ──
-  function save() { localStorage.setItem('temuOrders', JSON.stringify(orders)); }
+function pim(e){Array.from(e.target.files).forEach(f=>{let r=new FileReader();r.onload=ev=>{pimgs.push(ev.target.result);rp()};r.readAsDataURL(f)})}
+function rp(){let pg=document.getElementById('pg'),uz=document.getElementById('uz');if(pimgs.length>0){uz.classList.add('has-files');uz.innerHTML=`<input type="file" id="fim" accept="image/*" multiple onchange="pim(event)"><span style="font-size:40px">✅</span><div style="font-weight:600">${pimgs.length} صورة</div>`}else{uz.classList.remove('has-files');uz.innerHTML=`<input type="file" id="fim" accept="image/*" multiple onchange="pim(event)"><span style="font-size:40px">📸</span><div style="font-weight:600">اضغط لإضافة صور</div>`}pg.innerHTML=pimgs.map((s,i)=>`<div class="preview-item"><img src="${s}" onclick="document.getElementById('lbi').src='${s}';document.getElementById('lb').classList.add('show')"><button class="preview-remove" onclick="pimgs.splice(${i},1);rp()">✕</button></div>`).join('')}
 
-  // ── TABS ──
-  function switchTab(tab) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    event.target.classList.add('active');
-    document.getElementById('page-' + tab).classList.add('active');
-    if (tab === 'monthly') renderMonthly();
-    if (tab === 'analytics') renderAnalytics();
-  }
+function clrf(){document.getElementById('fid').value='';document.getElementById('fd').value=new Date().toISOString().split('T')[0];document.getElementById('fc').value='';document.getElementById('fa').value='';document.getElementById('fam').value='';document.getElementById('fp').value='';document.getElementById('fdl').value='';document.getElementById('fn').value='';pimgs=[];rp();eid=null;document.getElementById('ft').textContent='✨ طلب جديد';document.getElementById('fcnl').style.display='none';ss('pending',document.querySelector('.so.pending'))}
 
-  // ── IMAGE HANDLING ──
-  function previewImages(e) {
-    const files = Array.from(e.target.files);
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = ev => {
-        pendingImages.push(ev.target.result);
-        renderPreviewGrid();
-      };
-      reader.readAsDataURL(file);
-    });
-  }
+function sv(){let d=document.getElementById('fd').value,c=document.getElementById('fc').value.trim(),a=document.getElementById('fa').value.trim(),am=parseFloat(document.getElementById('fam').value),p=parseFloat(document.getElementById('fp').value),dl=parseFloat(document.getElementById('fdl').value)||0,st=document.getElementById('fst').value,n=document.getElementById('fn').value.trim();if(!d||!c||isNaN(am)||isNaN(p)){show('⚠️ أكمل الحقول المطلوبة','warn');return}let o={id:eid||Date.now(),date:d,customer:c,address:a,amountPaid:am,profit:p,delivery:dl,status:st,notes:n,images:[...pimgs]};if(eid){let i=orders.findIndex(x=>x.id===eid);if(i!==-1)orders[i]=o;show('✏️ تم التحديث')}else{orders.unshift(o);show('✨ تم الإضافة');cfetti()}localStorage.setItem('temuOrders',JSON.stringify(orders));clrf();us();ro();st('home',document.querySelectorAll('.tab')[0])}
 
-  function renderPreviewGrid() {
-    const grid = document.getElementById('preview-grid');
-    grid.innerHTML = pendingImages.map((src, i) => `
-      <div class="img-preview-wrap">
-        <img src="${src}" alt="صورة ${i+1}">
-        <button class="img-remove-btn" onclick="removePreviewImg(${i})">✕</button>
-      </div>`).join('');
-  }
+function edt(id){let o=orders.find(x=>x.id===id);if(!o)return;eid=id;document.getElementById('fid').value=id;document.getElementById('fd').value=o.date;document.getElementById('fc').value=o.customer;document.getElementById('fa').value=o.address||'';document.getElementById('fam').value=o.amountPaid;document.getElementById('fp').value=o.profit;document.getElementById('fdl').value=o.delivery||'';document.getElementById('fn').value=o.notes||'';pimgs=o.images||[];rp();document.getElementById('ft').textContent='✏️ تعديل الطلب';document.getElementById('fcnl').style.display='block';ss(o.status||'pending',document.querySelector('.so.'+(o.status||'pending')));st('add',document.querySelectorAll('.tab')[3])}
 
-  function removePreviewImg(i) {
-    pendingImages.splice(i, 1);
-    renderPreviewGrid();
-  }
+function ccl(){clrf();show('تم الإلغاء')}
+function del(id){delid=id;document.getElementById('conf-m').classList.add('show')}
+function cdel(){if(delid){orders=orders.filter(o=>o.id!==delid);localStorage.setItem('temuOrders',JSON.stringify(orders));us();ro();show('🗑️ تم الحذف');delid=null}document.getElementById('conf-m').classList.remove('show')}
 
-  function clearForm() {
-    ['f-date','f-customer','f-amount','f-profit','f-delivery','f-notes','f-id'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('f-address').value = '';
-    document.getElementById('f-status').value = 'pending';
-    document.getElementById('f-images').value = '';
-    pendingImages = [];
-    document.getElementById('preview-grid').innerHTML = '';
-    editingId = null;
-    document.getElementById('form-title').textContent = 'إضافة طلب جديد';
-    document.getElementById('btn-submit').textContent = '+ إضافة الطلب';
-    document.getElementById('btn-cancel').style.display = 'none';
-  }
+function setf(f,el){filter=f;document.querySelectorAll('.fc').forEach(c=>c.classList.remove('active'));el.classList.add('active');ro()}
+function filt(){ro()}
+function ts(){sortD=!sortD;ro();show(sortD?'الأحدث أولاً':'الأقدم أولاً')}
 
-  function cancelEdit() {
-    clearForm();
-    showToast('تم إلغاء التعديل');
-  }
+function gf(){let f=[...orders],s=document.getElementById('srch').value.toLowerCase();if(s)f=f.filter(o=>o.customer.toLowerCase().includes(s)||(o.address&&o.address.toLowerCase().includes(s))||o.date.includes(s));let t=new Date().toISOString().split('T')[0],w=new Date(Date.now()-7*86400000).toISOString().split('T')[0];switch(filter){case'today':f=f.filter(o=>o.date===t);break;case'week':f=f.filter(o=>o.date>=w);break;case'pending':f=f.filter(o=>o.status==='pending');break;case'delivered':f=f.filter(o=>o.status==='delivered')}f.sort((a,b)=>sortD?b.id-a.id:a.id-b.id);return f}
 
-  // ── ADD/EDIT ORDER ──
-  function addOrder() {
-    const date     = document.getElementById('f-date').value;
-    const customer = document.getElementById('f-customer').value.trim();
-    const address  = document.getElementById('f-address').value.trim();
-    const amount   = parseFloat(document.getElementById('f-amount').value);
-    const profit   = parseFloat(document.getElementById('f-profit').value);
-    const delivery = parseFloat(document.getElementById('f-delivery').value) || 0;
-    const status   = document.getElementById('f-status').value;
-    const notes    = document.getElementById('f-notes').value.trim();
+function us(){let inc=orders.reduce((s,o)=>s+o.amountPaid+(o.delivery||0),0),pr=orders.reduce((s,o)=>s+o.profit+(o.delivery||0),0),co=inc-pr;document.getElementById('h-inc').textContent=inc.toFixed(2)+' درهم';document.getElementById('h-pr').textContent=pr.toFixed(2)+' درهم';document.getElementById('h-co').textContent=co.toFixed(2)+' درهم';document.getElementById('h-cnt').textContent=orders.length}
 
-    if (!date || !customer || isNaN(amount) || isNaN(profit)) {
-      showToast('⚠️ يرجى ملء الحقول المطلوبة', '#f59e0b'); return;
-    }
+function ro(){let c=document.getElementById('olist'),f=gf();if(f.length===0){c.innerHTML=`<div class="empty"><div class="ei">📦</div><div style="font-size:18px;font-weight:700;margin-bottom:8px">لا توجد طلبات</div><div style="font-size:14px;color:var(--muted);margin-bottom:24px">${filter!=='all'?'جرب تغيير الفلتر':'ابدأ بإضافة طلب'}</div>${filter==='all'?'<button class="sbmt" onclick="st('add',document.querySelectorAll('.tab')[3])" style="width:auto;padding:14px 32px">➕ إضافة طلب</button>':''}</div>`;return}c.innerHTML=f.map(o=>{let st=o.status||'pending',stt={pending:'⏳ قيد الانتظار',delivered:'✅ تم التوصيل',cancelled:'❌ ملغي'}[st],im=o.images?.length?`<div class="order-images">${o.images.map(s=>`<img class="order-img" src="${s}" onclick="document.getElementById('lbi').src='${s}';document.getElementById('lb').classList.add('show')">`).join('')}</div>`:'',nt=o.notes?`<div class="order-note">📝 ${o.notes}</div>`:'';return`<div class="order"><div class="oh"><div><div class="oc">${o.customer}</div><div class="order-meta"><span>📅 ${o.date}</span>${o.address?`<span>📍 ${o.address.substring(0,20)}${o.address.length>20?'...':''}</span>`:''}</div><span class="order-status-badge status-${st}">${stt}</span></div><div class="ob">+${(o.profit+(o.delivery||0)).toFixed(2)} درهم</div></div><div class="order-body">${im}${nt}<div class="order-stats"><div class="order-stat"><div class="order-stat-label">الدخل</div><div class="order-stat-value income">${(o.amountPaid+(o.delivery||0)).toFixed(2)}</div></div><div class="order-stat"><div class="order-stat-label">التكلفة</div><div class="order-stat-value cost">${(o.amountPaid-o.profit).toFixed(2)}</div></div><div class="order-stat"><div class="order-stat-label">الربح</div><div class="order-stat-value profit">${(o.profit+(o.delivery||0)).toFixed(2)}</div></div></div></div><div class="os"><button class="obtn btn-whatsapp" onclick="shr(${o.id})">📱 واتساب</button><button class="obtn be" onclick="edt(${o.id})">✏️ تعديل</button><button class="obtn bd" onclick="del(${o.id})">🗑️ حذف</button></div></div>`}).join('')}
 
-    const orderData = {
-      id: editingId || Date.now(),
-      customer, address, amountPaid: amount,
-      profit, delivery, date, status, notes,
-      images: [...pendingImages],
-      updatedAt: new Date().toISOString()
-    };
+function cm(d){vdate.setMonth(vdate.getMonth()+d);rm()}
+function rm(){let y=vdate.getFullYear(),m=vdate.getMonth();document.getElementById('mn').textContent=MONTHS[m];document.getElementById('my').textContent=y;let mo=orders.filter(o=>{let d=new Date(o.date);return d.getFullYear()===y&&d.getMonth()===m}),inc=mo.reduce((s,o)=>s+o.amountPaid+(o.delivery||0),0),pr=mo.reduce((s,o)=>s+o.profit+(o.delivery||0),0),co=inc-pr;document.getElementById('m-inc').textContent=inc.toFixed(2)+' درهم';document.getElementById('m-pr').textContent=pr.toFixed(2)+' درهم';document.getElementById('m-co').textContent=co.toFixed(2)+' درهم';document.getElementById('m-cnt').textContent=mo.length;let c=document.getElementById('mlist');if(mo.length===0){c.innerHTML=`<div class="empty"><div class="ei">📭</div><div style="font-size:18px;font-weight:700">لا توجد طلبات</div><div style="font-size:14px;color:var(--muted)">في ${MONTHS[m]} ${y}</div></div>`}else{c.innerHTML=mo.map(o=>`<div class="order" style="margin-bottom:12px"><div style="padding:16px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:700;margin-bottom:4px">${o.customer}</div><div style="font-size:12px;color:var(--muted)">${o.date}</div></div><div style="text-align:left"><div style="color:var(--green);font-weight:700">+${(o.profit+(o.delivery||0)).toFixed(2)}</div><div style="font-size:11px;color:var(--red)">−${(o.amountPaid-o.profit).toFixed(2)}</div></div></div></div>`).join('')}}
 
-    if (editingId) {
-      const idx = orders.findIndex(o => o.id === editingId);
-      if (idx !== -1) orders[idx] = orderData;
-      showToast('تم تحديث الطلب ✓');
-    } else {
-      orders.unshift(orderData);
-      showToast('تم إضافة الطلب ✓');
-    }
+function ra(){if(orders.length===0){document.getElementById('a-bm').textContent='---';document.getElementById('a-bd').textContent='0 درهم';document.getElementById('a-tc').textContent='---';document.getElementById('a-ap').textContent='0 درهم';document.getElementById('ch-m').innerHTML='';document.getElementById('ch-c').innerHTML='';document.getElementById('tips').innerHTML='<div class="tip"><span class="tip-icon">💡</span><div class="tip-text">أضف طلبات لرؤية التحليلات</div></div>';return}let mp={},dp={},cs={};orders.forEach(o=>{let d=new Date(o.date),k=`${d.getFullYear()}-${d.getMonth()}`;mp[k]=(mp[k]||0)+o.profit+(o.delivery||0);dp[o.date]=(dp[o.date]||0)+o.profit+(o.delivery||0);if(!cs[o.customer])cs[o.customer]={c:0,p:0};cs[o.customer].c++;cs[o.customer].p+=o.profit+(o.delivery||0)});let bm=Object.entries(mp).sort((a,b)=>b[1]-a[1])[0];if(bm){let[y,m]=bm[0].split('-');document.getElementById('a-bm').textContent=`${MONTHS[m]} ${y}`}let bd=Object.entries(dp).sort((a,b)=>b[1]-a[1])[0];document.getElementById('a-bd').textContent=bd?`${bd[1].toFixed(0)} درهم`:'0 درهم';let tc=Object.entries(cs).sort((a,b)=>b[1].c-a[1].c)[0];if(tc){document.getElementById('a-tc').textContent=tc[0]}let ap=orders.reduce((s,o)=>s+o.profit,0)/orders.length;document.getElementById('a-ap').textContent=ap.toFixed(0)+' درهم';let ms=Object.entries(mp).sort().slice(-6),mm=Math.max(...ms.map(x=>x[1]))||1;document.getElementById('ch-m').innerHTML=ms.map(([k,v])=>{let[y,m]=k.split('-'),p=(v/mm*100).toFixed(0);return`<div class="bar"><div class="bl">${MONTHS[m].slice(0,3)}</div><div class="bt"><div class="bf" style="width:${p}%"></div></div><div style="width:50px;font-size:12px;font-weight:700">${v.toFixed(0)}</div></div>`}).join('');let t5=Object.entries(cs).sort((a,b)=>b[1].p-a[1].p).slice(0,5),mc=Math.max(...t5.map(x=>x[1].p))||1;document.getElementById('ch-c').innerHTML=t5.map(([n,s])=>{let p=(s.p/mc*100).toFixed(0);return`<div class="bar"><div class="bl" style="width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px">${n}</div><div class="bt"><div class="bf" style="width:${p}%;background:var(--blue)"></div></div><div style="width:50px;font-size:12px;font-weight:700">${s.p.toFixed(0)}</div></div>`}).join('');let tips=[],cr=orders.filter(o=>o.status==='delivered').length/orders.length*100,dr=orders.filter(o=>o.delivery>0).length/orders.length*100;if(cr<80)tips.push({i:'⚠️',t:'نسبة إكمال الطلبات منخفضة'});if(dr<30)tips.push({i:'🚚',t:'أضف رسوم توصيل لزيادة الأرباح'});if(ap<20)tips.push({i:'📈',t:'حاول رفع هامش الربح'});if(tc&&tc[1].c>=3)tips.push({i:'🌟',t:`${tc[0]} زبون مميز!`});if(orders.length>10&&cr>90)tips.push({i:'🎉',t:'أداء ممتاز!'});if(tips.length===0)tips.push({i:'💡',t:'واصل العمل للمزيد من النصائح'});document.getElementById('tips').innerHTML=tips.map(t=>`<div class="tip"><span class="tip-icon">${t.i}</span><div class="tip-text">${t.t}</div></div>`).join('')}
 
-    save(); clearForm(); calcStats(); renderOrders();
-    switchTab('home');
-  }
+function calc(){document.getElementById('calc-m').classList.add('show')}
+function ccalc(){let b=parseFloat(document.getElementById('cb').value)||0,s=parseFloat(document.getElementById('cs').value)||0,d=parseFloat(document.getElementById('cd').value)||0,pr=s-b+d;document.getElementById('cr').textContent=pr.toFixed(2)+' درهم'}
+function exp(){let data={orders:orders,date:new Date().toISOString()},blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`temu-${new Date().toISOString().split('T')[0]}.json`;a.click();URL.revokeObjectURL(url);show('📥 تم التصدير')}
+function imp(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=ev=>{try{let d=JSON.parse(ev.target.result);if(d.orders&&Array.isArray(d.orders)&&confirm(`استيراد ${d.orders.length} طلب؟`)){orders=[...d.orders,...orders];localStorage.setItem('temuOrders',JSON.stringify(orders));us();ro();show('📤 تم الاستيراد')}}catch(err){show('⚠️ خطأ','err')}};r.readAsText(f);e.target.value=''}
+function shr(id){let o=orders.find(x=>x.id===id);if(!o)return;let t=`📦 طلب جديد\n\n👤 ${o.customer}\n💰 ربح: ${(o.profit+(o.delivery||0)).toFixed(2)} درهم\n📅 ${o.date}`;if(navigator.share){navigator.share({title:'طلب Temu',text:t})}else{window.open(`https://wa.me/?text=${encodeURIComponent(t)}`,'_blank')}}
+function share(){let inc=orders.reduce((s,o)=>s+o.amountPaid,0),pr=orders.reduce((s,o)=>s+o.profit,0),t=`📊 ملخص Temu\n\n💵 الدخل: ${inc.toFixed(2)} درهم\n📈 الربح: ${pr.toFixed(2)} درهم\n📦 الطلبات: ${orders.length}`;if(navigator.share){navigator.share({title:'ملخص Temu',text:t})}else{window.open(`https://wa.me/?text=${encodeURIComponent(t)}`,'_blank')}}
+function show(m,t='success'){let x=document.getElementById('toast');x.textContent=m;x.className='toast '+(t==='err'?'error':t);x.classList.add('show');setTimeout(()=>x.classList.remove('show'),3000)}
+function cfetti(){for(let i=0;i<30;i++){let c=document.createElement('div');c.style.cssText=`position:fixed;width:10px;height:10px;background:${['#00d084','#00b8ff','#ffa502','#ff4757'][Math.floor(Math.random()*4)]};left:${Math.random()*100}vw;top:100vh;pointer-events:none;z-index:9999;animation:cf 3s ease-out forwards`;document.body.appendChild(c);setTimeout(()=>c.remove(),3000)}let s=document.createElement('style');s.textContent='@keyframes cf{to{transform:translateY(-100vh) rotate(720deg);opacity:0}}';document.head.appendChild(s)}
 
-  // ── EDIT ──
-  function editOrder(id) {
-    const order = orders.find(o => o.id === id);
-    if (!order) return;
-
-    editingId = id;
-    document.getElementById('f-id').value = id;
-    document.getElementById('f-date').value = order.date;
-    document.getElementById('f-customer').value = order.customer;
-    document.getElementById('f-address').value = order.address || '';
-    document.getElementById('f-amount').value = order.amountPaid;
-    document.getElementById('f-profit').value = order.profit;
-    document.getElementById('f-delivery').value = order.delivery || '';
-    document.getElementById('f-status').value = order.status || 'pending';
-    document.getElementById('f-notes').value = order.notes || '';
-
-    pendingImages = order.images || [];
-    renderPreviewGrid();
-
-    document.getElementById('form-title').textContent = '✏️ تعديل الطلب';
-    document.getElementById('btn-submit').textContent = '💾 حفظ التغييرات';
-    document.getElementById('btn-cancel').style.display = 'block';
-
-    switchTab('add');
-    document.querySelectorAll('.tab')[3].classList.add('active');
-  }
-
-  // ── DELETE ──
-  function deleteOrder(id) {
-    deleteCallback = () => {
-      orders = orders.filter(o => o.id !== id);
-      save(); calcStats(); renderOrders();
-      closeConfirmModal();
-      showToast('تم حذف الطلب');
-    };
-    document.getElementById('confirm-text').textContent = 'هل أنت متأكد من حذف هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.';
-    document.getElementById('confirm-btn').onclick = deleteCallback;
-    document.getElementById('confirm-modal').classList.add('open');
-  }
-
-  function closeConfirmModal() {
-    document.getElementById('confirm-modal').classList.remove('open');
-    deleteCallback = null;
-  }
-
-  // ── LIGHTBOX ──
-  function openLightbox(src) {
-    document.getElementById('lightbox-img').src = src;
-    document.getElementById('lightbox').classList.add('open');
-  }
-  function closeLightbox() {
-    document.getElementById('lightbox').classList.remove('open');
-  }
-
-  // ── FILTER & SEARCH ──
-  function filterOrders() {
-    renderOrders();
-  }
-
-  function setFilter(filter) {
-    currentFilter = filter;
-    document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
-    event.target.classList.add('active');
-    renderOrders();
-  }
-
-  function toggleSort() {
-    sortDesc = !sortDesc;
-    renderOrders();
-    showToast(sortDesc ? 'الأحدث أولاً' : 'الأقدم أولاً');
-  }
-
-  function getFilteredOrders() {
-    let filtered = [...orders];
-    const search = document.getElementById('search-input').value.toLowerCase();
-
-    if (search) {
-      filtered = filtered.filter(o => 
-        o.customer.toLowerCase().includes(search) ||
-        (o.address && o.address.toLowerCase().includes(search)) ||
-        o.date.includes(search)
-      );
-    }
-
-    const today = new Date().toISOString().split('T')[0];
-    const weekAgo = new Date(Date.now() - 7*24*60*60*1000).toISOString().split('T')[0];
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-
-    switch(currentFilter) {
-      case 'today': filtered = filtered.filter(o => o.date === today); break;
-      case 'week': filtered = filtered.filter(o => o.date >= weekAgo); break;
-      case 'month': filtered = filtered.filter(o => o.date >= monthStart); break;
-      case 'pending': filtered = filtered.filter(o => o.status === 'pending'); break;
-      case 'delivered': filtered = filtered.filter(o => o.status === 'delivered'); break;
-    }
-
-    filtered.sort((a, b) => sortDesc ? b.id - a.id : a.id - b.id);
-    return filtered;
-  }
-
-  // ── STATS ──
-  function calcStats() {
-    const income = orders.reduce((s,o) => s+o.amountPaid+(o.delivery||0), 0);
-    const profit = orders.reduce((s,o) => s+o.profit+(o.delivery||0), 0);
-    const cost = income - profit;
-    const avg = orders.length ? profit / orders.length : 0;
-    const margin = income > 0 ? (profit / income * 100) : 0;
-
-    document.getElementById('s-income').textContent = income.toFixed(2)+' درهم';
-    document.getElementById('s-profit').textContent = profit.toFixed(2)+' درهم';
-    document.getElementById('s-cost').textContent = cost.toFixed(2)+' درهم';
-    document.getElementById('s-count').textContent = orders.length;
-
-    document.getElementById('q-avg').textContent = avg.toFixed(0)+' درهم';
-    document.getElementById('q-margin').textContent = margin.toFixed(1)+'%';
-
-    const today = new Date().toISOString().split('T')[0];
-    const todayOrders = orders.filter(o => o.date === today).length;
-    document.getElementById('q-today').textContent = todayOrders;
-
-    const weekAgo = new Date(Date.now() - 7*24*60*60*1000).toISOString().split('T')[0];
-    const weekOrders = orders.filter(o => o.date >= weekAgo).length;
-    document.getElementById('q-week').textContent = weekOrders;
-  }
-
-  // ── RENDER ORDERS ──
-  function renderOrders() {
-    const el = document.getElementById('orders-list');
-    const filtered = getFilteredOrders();
-
-    if (!filtered.length) {
-      el.innerHTML = `<div class="empty"><span class="empty-icon">📦</span>لا توجد طلبات حالياً<br>اضغط "إضافة" للبدء!</div>`;
-      return;
-    }
-
-    el.innerHTML = filtered.map(o => {
-      const imgs = (o.images && o.images.length)
-        ? `<div class="order-imgs">${o.images.map(src => `<img class="order-img" src="${src}" onclick="openLightbox('${src}')">`).join('')}</div>`
-        : '';
-      const addr = o.address ? `<div class="order-address">📍 <span>${o.address}</span></div>` : '';
-      const notes = o.notes ? `<div style="font-size:11px;color:var(--muted);margin-top:4px;padding:6px;background:var(--surface2);border-radius:6px;">📝 ${o.notes}</div>` : '';
-
-      const statusClass = o.status === 'delivered' ? 'status-delivered' : o.status === 'cancelled' ? 'status-cancelled' : 'status-pending';
-      const statusText = o.status === 'delivered' ? 'تم التوصيل' : o.status === 'cancelled' ? 'ملغي' : 'قيد الانتظار';
-
-      return `
-      <div class="order-card">
-        <div class="order-top">
-          <div>
-            <div class="order-name">${o.customer}</div>
-            <div class="order-date">📅 ${o.date}</div>
-            ${addr}
-            <span class="order-status ${statusClass}">${statusText}</span>
-          </div>
-          <div class="order-profit-badge">+${(o.profit+(o.delivery||0)).toFixed(2)} درهم</div>
-        </div>
-        ${imgs}
-        ${notes}
-        <div class="order-details">
-          <div class="detail-box"><div class="detail-label">المبلغ المحصل</div><div class="detail-val b">${(o.amountPaid+(o.delivery||0)).toFixed(2)} درهم</div></div>
-          <div class="detail-box"><div class="detail-label">التكلفة التقديرية</div><div class="detail-val r">${(o.amountPaid-o.profit).toFixed(2)} درهم</div></div>
-        </div>
-        <div class="order-footer">
-          <button class="btn-edit" onclick="editOrder(${o.id})">✏️ تعديل</button>
-          <button class="btn-del" onclick="deleteOrder(${o.id})">🗑 حذف</button>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  // ── MONTHLY ──
-  function changeMonth(dir) {
-    viewMonth += dir;
-    if (viewMonth < 0) { viewMonth = 11; viewYear--; }
-    if (viewMonth > 11) { viewMonth = 0; viewYear++; }
-    renderMonthly();
-  }
-
-  function renderMonthly() {
-    document.getElementById('month-label').textContent = MONTHS[viewMonth] + ' ' + viewYear;
-    const mo = orders.filter(o => { const d=new Date(o.date); return d.getFullYear()===viewYear && d.getMonth()===viewMonth; });
-    const income = mo.reduce((s,o) => s+o.amountPaid+(o.delivery||0), 0);
-    const profit = mo.reduce((s,o) => s+o.profit+(o.delivery||0), 0);
-    const cost = mo.reduce((s,o) => s+(o.amountPaid-o.profit), 0);
-    const delivery = mo.reduce((s,o) => s+(o.delivery||0), 0);
-    const avg = mo.length ? profit/mo.length : 0;
-    const pct = income > 0 ? profit/income*100 : 0;
-
-    document.getElementById('m-profit').textContent = profit.toFixed(2)+' درهم';
-    document.getElementById('m-cost').textContent = cost.toFixed(2)+' درهم';
-    document.getElementById('m-income').textContent = income.toFixed(2)+' درهم';
-    document.getElementById('m-delivery').textContent = delivery.toFixed(2)+' درهم';
-    document.getElementById('m-count').textContent = mo.length;
-    document.getElementById('m-avg').textContent = avg.toFixed(2)+' درهم';
-    document.getElementById('m-pct').textContent = pct.toFixed(1)+'%';
-    document.getElementById('m-pct2').textContent = pct.toFixed(1)+'%';
-    document.getElementById('m-bar').style.width = Math.min(pct,100)+'%';
-
-    const el = document.getElementById('month-orders-list');
-    if (!mo.length) {
-      el.innerHTML = `<div class="empty"><span class="empty-icon">📭</span>لا توجد طلبات في ${MONTHS[viewMonth]}<br><small style="font-size:12px;color:var(--muted)">جرب الانتقال لشهر آخر</small></div>`;
-      return;
-    }
-    el.innerHTML = mo.map(o => `
-      <div class="morder-row">
-        <div>
-          <div class="morder-name">${o.customer}</div>
-          <div class="morder-date">${o.date}${o.address ? ' · '+o.address.split('\n')[0] : ''}</div>
-        </div>
-        <div>
-          <div class="morder-profit">+${(o.profit+(o.delivery||0)).toFixed(2)} ربح</div>
-          <div class="morder-cost">−${(o.amountPaid-o.profit).toFixed(2)} تكلفة</div>
-        </div>
-      </div>`).join('');
-  }
-
-  // ── ANALYTICS ──
-  function renderAnalytics() {
-    if (orders.length === 0) {
-      document.getElementById('a-best-month').textContent = '—';
-      document.getElementById('a-best-day').textContent = '0 درهم';
-      document.getElementById('a-top-customer').textContent = '—';
-      document.getElementById('a-top-count').textContent = '0';
-      document.getElementById('chart-months').innerHTML = '';
-      document.getElementById('chart-customers').innerHTML = '';
-      document.getElementById('tips-container').innerHTML = '<div style="color: var(--muted); font-size: 13px; text-align: center;">أضف بعض الطلبات لرؤية التحليلات</div>';
-      return;
-    }
-
-    // Best month
-    const monthProfits = {};
-    orders.forEach(o => {
-      const d = new Date(o.date);
-      const key = `${d.getFullYear()}-${d.getMonth()}`;
-      monthProfits[key] = (monthProfits[key] || 0) + o.profit + (o.delivery || 0);
-    });
-    const bestMonth = Object.entries(monthProfits).sort((a,b) => b[1]-a[1])[0];
-    if (bestMonth) {
-      const [year, month] = bestMonth[0].split('-');
-      document.getElementById('a-best-month').textContent = `${MONTHS[month]} ${year}`;
-    }
-
-    // Best day
-    const dayProfits = {};
-    orders.forEach(o => {
-      dayProfits[o.date] = (dayProfits[o.date] || 0) + o.profit + (o.delivery || 0);
-    });
-    const bestDay = Object.entries(dayProfits).sort((a,b) => b[1]-a[1])[0];
-    document.getElementById('a-best-day').textContent = bestDay ? `${bestDay[1].toFixed(0)} درهم` : '0 درهم';
-
-    // Top customer
-    const customerStats = {};
-    orders.forEach(o => {
-      if (!customerStats[o.customer]) customerStats[o.customer] = { count: 0, profit: 0 };
-      customerStats[o.customer].count++;
-      customerStats[o.customer].profit += o.profit + (o.delivery || 0);
-    });
-    const topCustomer = Object.entries(customerStats).sort((a,b) => b[1].count - a[1].count)[0];
-    if (topCustomer) {
-      document.getElementById('a-top-customer').textContent = topCustomer[0];
-      document.getElementById('a-top-count').textContent = topCustomer[1].count;
-    }
-
-    // Monthly chart
-    const months = Object.entries(monthProfits).sort().slice(-6);
-    const maxMonth = Math.max(...months.map(m => m[1])) || 1;
-    document.getElementById('chart-months').innerHTML = months.map(([key, val]) => {
-      const [y, m] = key.split('-');
-      const pct = (val / maxMonth * 100).toFixed(0);
-      return `
-        <div class="chart-bar">
-          <div class="chart-label">${MONTHS[m].slice(0,3)}</div>
-          <div class="chart-track"><div class="chart-fill" style="width:${pct}%;background:var(--green)"></div></div>
-          <div class="chart-value">${val.toFixed(0)}</div>
-        </div>`;
-    }).join('') || '<div style="color:var(--muted);font-size:12px;text-align:center;">لا توجد بيانات كافية</div>';
-
-    // Top customers chart
-    const top5 = Object.entries(customerStats).sort((a,b) => b[1].profit - a[1].profit).slice(0, 5);
-    const maxCust = Math.max(...top5.map(c => c[1].profit)) || 1;
-    document.getElementById('chart-customers').innerHTML = top5.map(([name, stats]) => {
-      const pct = (stats.profit / maxCust * 100).toFixed(0);
-      return `
-        <div class="chart-bar">
-          <div class="chart-label" style="width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div>
-          <div class="chart-track"><div class="chart-fill" style="width:${pct}%;background:var(--blue)"></div></div>
-          <div class="chart-value">${stats.profit.toFixed(0)}</div>
-        </div>`;
-    }).join('');
-
-    // Smart tips
-    const tips = [];
-    const avgProfit = orders.reduce((s,o) => s+o.profit, 0) / orders.length;
-    const deliveryCount = orders.filter(o => o.delivery && o.delivery > 0).length;
-    const deliveredCount = orders.filter(o => o.status === 'delivered').length;
-    const completionRate = orders.length > 0 ? (deliveredCount / orders.length * 100) : 0;
-
-    if (completionRate < 80) tips.push('⚠️ نسبة إكمال الطلبات منخفضة - راجع الطلبات الملغاة');
-    if (deliveryCount / orders.length < 0.3) tips.push('💡 أضف رسوم توصيل للزيادة من الأرباح');
-    if (avgProfit < 20) tips.push('📈 حاول زيادة هامش الربح في الطلبات القادمة');
-    if (topCustomer && topCustomer[1].count >= 3) tips.push(`🌟 ${topCustomer[0]} زبون مميز - قدم له عرضاً خاصاً!`);
-    if (orders.length > 10 && completionRate > 90) tips.push('🎉 أداء ممتاز! استمر في العمل الجيد');
-
-    document.getElementById('tips-container').innerHTML = tips.length 
-      ? tips.map(t => `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">${t}</div>`).join('')
-      : '<div style="color: var(--muted); font-size: 13px; text-align: center;">واصل العمل لتحصل على نصائح مخصصة</div>';
-  }
-
-  // ── EXPORT/IMPORT ──
-  function exportData() {
-    const data = {
-      orders: orders,
-      exportDate: new Date().toISOString(),
-      version: '2.0'
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `temu-backup-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('تم تصدير البيانات ✓');
-  }
-
-  function importData(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = ev => {
-      try {
-        const data = JSON.parse(ev.target.result);
-        if (data.orders && Array.isArray(data.orders)) {
-          if (confirm(`هل تريد استيراد ${data.orders.length} طلب؟ سيتم دمجها مع البيانات الحالية.`)) {
-            orders = [...data.orders, ...orders];
-            save(); calcStats(); renderOrders();
-            showToast('تم استيراد البيانات بنجاح ✓');
-          }
-        } else {
-          showToast('⚠️ ملف غير صالح', '#ef4444');
-        }
-      } catch (err) {
-        showToast('⚠️ خطأ في قراءة الملف', '#ef4444');
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = '';
-  }
-
-  // ── TOAST ──
-  function showToast(msg, bg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.style.background = bg || 'var(--green)';
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2500);
-  }
-
-  // ── INIT ──
-  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
-  calcStats(); renderOrders();
+us();ro();
 </script>
 </body>
 </html>
